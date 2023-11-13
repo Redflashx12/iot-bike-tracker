@@ -1,7 +1,7 @@
-from parser_template import parser_template
+from parser.parser_template import parser_template
 
 
-class parser(parser_template):
+class LT501Parser(parser_template):
     """
     The payload parser for Globalsat LT-501E.
     message format is:
@@ -356,5 +356,5 @@ if __name__ == "__main__":
         test_data = [
             "8083BD02980091C7F70202",
         ]
-    p = parser(debug_level=99)
+    p = LT501Parser(debug_level=99)
     p.test(test_data)
