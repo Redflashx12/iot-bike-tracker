@@ -1,8 +1,9 @@
 import json
 import os
+from datetime import datetime
 
 from bson import json_util
-from flask import Flask, request
+from flask import Flask, request, jsonify, make_response
 from flask_httpauth import HTTPTokenAuth
 
 
@@ -25,13 +26,29 @@ def create_app(db_client):
         device_ids = db_client.get_all_device_ids()
         return device_ids
 
-    # Route for retrieving messages in JSON format for a specific device
     @app.route('/devices/<device_id>/')
     @auth.login_required
     def get_messages_json(device_id):
-        page_num = int(request.args.get('page', 1))
-        page_size = 10
-        messages = db_client.get_messages(device_id, page_num, page_size)
-        return json.loads(json_util.dumps(messages))
+        try:
+            page_num = int(request.args.get('page', 1))
+            if page_num < 1:
+                raise ValueError("Page number must be a positive integer")
+        except ValueError:
+            return jsonify({"error": "Invalid page number"}), 400
+        from_dt = request.args.get('from', datetime.min.isoformat())
+        to_dt = request.args.get('to', datetime.max.isoformat())
+        page_size = 20
+        
+        messages, total_messages = db_client.get_messages_of_device(device_id, page_num, page_size,
+                                                                    from_dt, to_dt)
+        total_pages = (total_messages + page_size - 1) // page_size
+        if page_num > total_pages:
+            return jsonify({"error": "Page not found"}), 404
+
+        response = make_response(json.loads(json_util.dumps(messages)))
+        response.headers['X-Page'] = page_num
+        response.headers['X-Total-Pages'] = total_pages
+        response.headers['X-Total-Messages'] = total_messages
+        return response
 
     return app
