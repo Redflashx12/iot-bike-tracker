@@ -27,7 +27,7 @@
 // SOFTWARE.
 
 function byteToHex(byte) {
-    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+return ('0' + (byte & 0xFF).toString(16)).slice(-2);
 }
 
 function parseNumber(bytes, isLittleEndian) {
@@ -65,13 +65,13 @@ function parseB0to4(data) {
 }
 
 function parse_track_rep(bytes) {
-    if (bytes.length == 17) {
+    if (bytes.length === 17) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
             "lon": parseGCV(bytes.slice(3, 7)),
             "lat": parseGCV(bytes.slice(7, 11)),
-            "gps_fix": parseB5to7(bytes.slice(11, 12)),
+            "gps_fix": !!parseB5to7(bytes.slice(11, 12)),
             "report_type": parseB0to4(bytes.slice(11, 12)),
             "batt": parseNumber(bytes.slice(12, 13), false),
             "timestamp": parseNumber(bytes.slice(13, 17), true),
@@ -83,13 +83,13 @@ function parse_track_rep(bytes) {
 }
 
 function parse_track_rep_short(bytes) {
-    if (bytes.length == 11) {
+    if (bytes.length === 11) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 2), false),
             "lon": parseGCV(bytes.slice(2, 6)),
             "lat": parseGCV(bytes.slice(6, 10)),
-            "gps_fix": parseB5to7(bytes.slice(10, 11)),
+            "gps_fix": !!parseB5to7(bytes.slice(10, 11)),
             "report_type": parseB0to4(bytes.slice(10, 11)),
         }
     } else {
@@ -98,13 +98,13 @@ function parse_track_rep_short(bytes) {
 }
 
 function parse_help_rep(bytes) {
-    if (bytes.length == 17) {
+    if (bytes.length === 17) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
             "lon": parseGCV(bytes.slice(3, 7)),
             "lat": parseGCV(bytes.slice(7, 11)),
-            "gps_fix": parseB5to7(bytes.slice(11, 12)),
+            "gps_fix": !!parseB5to7(bytes.slice(11, 12)),
             "alarm_type": parseB0to4(bytes.slice(11, 12)),
             "batt": parseNumber(bytes.slice(12, 13), false),
             "timestamp": parseNumber(bytes.slice(13, 17), true),
@@ -116,13 +116,13 @@ function parse_help_rep(bytes) {
 }
 
 function parse_help_rep_short(bytes) {
-    if (bytes.length == 11) {
+    if (bytes.length === 11) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 2), false),
             "lon": parseGCV(bytes.slice(2, 6)),
             "lat": parseGCV(bytes.slice(6, 10)),
-            "gps_fix": parseB5to7(bytes.slice(10, 11)),
+            "gps_fix": !!parseB5to7(bytes.slice(10, 11)),
             "alarm_type": parseB0to4(bytes.slice(10, 11)),
         }
     }
@@ -132,7 +132,7 @@ function parse_help_rep_short(bytes) {
 }
 
 function parse_beacon_track_rep(bytes) {
-    if (bytes.length == 27) {
+    if (bytes.length === 27) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
@@ -150,7 +150,7 @@ function parse_beacon_track_rep(bytes) {
 }
 
 function parse_beacon_help_rep(bytes) {
-    if (bytes.length == 27) {
+    if (bytes.length === 27) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
@@ -167,7 +167,7 @@ function parse_beacon_help_rep(bytes) {
 }
 
 function parse_command(bytes) {
-    if (bytes.length == 9) {
+    if (bytes.length === 9) {
         cmd = bytes[3]
         if (cmd & 0x01) {
             return {
@@ -198,7 +198,7 @@ function parse_command(bytes) {
 }
 
 function parse_dismiss_help_rep(bytes) {
-    if (bytes.length == 12) {
+    if (bytes.length === 12) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
@@ -234,8 +234,8 @@ function decodeUplink(input) {
     let data = {}
     let errors = []
 
-    if (protocolVersion == 0x0C) {
-        commands = {
+    if (protocolVersion === 0x0C) {
+        let commands = {
             "1002": parse_track_rep,
             "0b00": parse_help_rep,
             "1302": parse_beacon_track_rep,
@@ -244,17 +244,17 @@ function decodeUplink(input) {
             "1102": parse_dismiss_help_rep,
             "0800": parse_set_device,
         }
-        commandId = byteToHex(bytes[1]) + byteToHex(bytes[2])
+        let commandId = byteToHex(bytes[1]) + byteToHex(bytes[2])
         if (commandId in commands) {
             data = commands[commandId](bytes)
         } else {
             errors.push("Unknown command ID")
         }
-    } else if (protocolVersion == 0x80) {
-        shortCommandId = bytes[1]
-        if (shortCommandId == 0x83) {
+    } else if (protocolVersion === 0x80) {
+        let shortCommandId = bytes[1]
+        if (shortCommandId === 0x83) {
             data = parse_track_rep_short(bytes)
-        } else if (shortCommandId == 0x01) {
+        } else if (shortCommandId === 0x01) {
             data = parse_help_rep_short(bytes)
         } else {
             errors.push("Unknown short command ID")
@@ -270,4 +270,4 @@ function decodeUplink(input) {
     };
 }
 
-console.log(decodeUplink({"bytes": [128, 131, 189, 2, 152, 0, 145, 199, 247, 2, 2]}))
+// console.log(decodeUplink({"bytes": [128, 131, 189, 2, 152, 0, 145, 199, 247, 2, 2]}))
