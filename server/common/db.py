@@ -7,15 +7,27 @@ from pymongo.errors import ServerSelectionTimeoutError
 
 
 class MongoDbClient:
-    def __init__(self, host: Optional[Union[str, Sequence[str]]]="mongodb://localhost:27017",
+    def __init__(self, host: Optional[Union[str, Sequence[str]]] = "mongodb://localhost:27017",
                  db_name: str = "mqtt_database",
+                 message_collection_name: str = "messages",
+                 device_collection_name: str = "devices",
                  connection_timeout: int = 7500):
         self.host = host
         self.db_name = db_name
+        self.message_collection_name = message_collection_name
+        self.device_collection_name = device_collection_name
         self.connection_timeout = connection_timeout
 
         self.client: Optional[MongoClient] = None
         self.database: Optional[Database] = None
+
+    def get_device_collection(self):
+        if self.database:
+            return self.database[self.device_collection_name]
+
+    def get_message_collection(self):
+        if self.database:
+            return self.database[self.message_collection_name]
 
     def start(self):
         try:

@@ -3,7 +3,7 @@ import os
 import oci
 import base64
 
-secret_ocid = os.environ.get("ORACLE_SECRET_OCID")
+secret_ocid = os.environ.get("oracle.secret_ocid")
 
 
 def retrieve_ttn_api_key(stage="CURRENT"):

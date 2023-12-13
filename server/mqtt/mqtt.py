@@ -1,9 +1,10 @@
 import json
 import logging
-import re
 
 import certifi
 import paho.mqtt.client as mqtt
+
+from data import Device, Message
 
 
 class TTNMqttSaver(mqtt.Client):
@@ -22,30 +23,43 @@ class TTNMqttSaver(mqtt.Client):
             logging.error(f"Failed to connect with result code {rc}")
 
     @staticmethod
-    def _extract_device_id_from_topic(topic):
-        device_id_search = re.search(r".*/devices/(.*)/.*", topic)
-        return device_id_search.group(1)
+    def _create_device_from_message(message) -> Device:
+        try:
+            device_ids = message["end_device_ids"]
+            eui = device_ids["dev_eui"]
+            ttn_id = device_ids["device_id"]
+            return Device(eui, ttn_id)
+        except KeyError as e:
+            raise InvalidMqttMessageError("MQTT message payload didn't contain all necessary data "
+                                          "in the 'end_device_ids' field.") from e
 
     @staticmethod
-    def _create_object_from_message(message):
-        payload = json.loads(message.payload)
-        uplink_msg = payload.get("uplink_message", {})
-        message_data = {
-            "device_id": TTNMqttSaver._extract_device_id_from_topic(message.topic),
-            "count": uplink_msg.get("f_cnt", None),
-            "payload": uplink_msg.get("frm_payload", None),
-            "rx_metadata": uplink_msg.get("rx_metadata", {}),
-            "consumed_airtime": uplink_msg.get("consumed_airtime", None),
-            "decoded_payload": uplink_msg.get("decoded_payload", {})
-        }
-        return message_data
+    def _create_message(json_message, device) -> Message:
+        try:
+            uplink_msg = json_message["uplink_message"]
+            count = uplink_msg["f_cnt"]
+            payload = uplink_msg["frm_payload"]
+            decoded_payload = uplink_msg["decoded_payload"]
+            rx_metadata = uplink_msg["rx_metadata"]
+            consumed_airtime = uplink_msg["consumed_airtime"]
+            return Message(device.eui, count, payload, decoded_payload, rx_metadata,
+                           consumed_airtime)
+        except KeyError as e:
+            raise InvalidMqttMessageError("MQTT message payload didn't contain all necessary data "
+                                          "in the 'uplink_message' field.") from e
+
+    @staticmethod
+    def _create_data_from_mqtt_message(mqtt_message):
+        json_message = json.loads(mqtt_message.payload)
+        device = TTNMqttSaver._create_device_from_message(json_message)
+        message = TTNMqttSaver._create_message(json_message, device)
+        return device, message
 
     def on_message(self, client, userdata, message):
         try:
-            received_data = self._create_object_from_message(message)
-            device_id = received_data["device_id"]
-            logging.info(f"New message received from {device_id}")
-            self.db_client.save_message(device_id, received_data)
+            device, message = self._create_data_from_mqtt_message(message)
+            logging.info(f"New message received from {device.ttn_id}")
+            self.db_client.save_message(device, message)
         except Exception:
             logging.exception("Skipping message due to exception")
 
@@ -58,3 +72,7 @@ class TTNMqttSaver(mqtt.Client):
         self.connect_async(host, port)
         self.subscribe(topics)
         self.loop_start()
+
+
+class InvalidMqttMessageError(Exception):
+    pass
