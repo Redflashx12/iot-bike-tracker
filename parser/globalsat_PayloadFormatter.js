@@ -69,11 +69,11 @@ function parse_track_rep(bytes) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
-            "lon": parseGCV(bytes.slice(3, 7)),
-            "lat": parseGCV(bytes.slice(7, 11)),
-            "gps_fix": !!parseB5to7(bytes.slice(11, 12)),
-            "report_type": parseB0to4(bytes.slice(11, 12)),
-            "batt": parseNumber(bytes.slice(12, 13), false),
+            "positionLongitude": parseGCV(bytes.slice(3, 7)),
+            "positionLatitude": parseGCV(bytes.slice(7, 11)),
+            "positionGnssFix": !!parseB5to7(bytes.slice(11, 12)),
+            "reportType": parseB0to4(bytes.slice(11, 12)),
+            "battery": parseNumber(bytes.slice(12, 13), false),
             "timestamp": parseNumber(bytes.slice(13, 17), true),
         }
     }
@@ -87,10 +87,10 @@ function parse_track_rep_short(bytes) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 2), false),
-            "lon": parseGCV(bytes.slice(2, 6)),
-            "lat": parseGCV(bytes.slice(6, 10)),
-            "gps_fix": !!parseB5to7(bytes.slice(10, 11)),
-            "report_type": parseB0to4(bytes.slice(10, 11)),
+            "positionLongitude": parseGCV(bytes.slice(2, 6)),
+            "positionLatitude": parseGCV(bytes.slice(6, 10)),
+            "positionGnssFix": !!parseB5to7(bytes.slice(10, 11)),
+            "reportType": parseB0to4(bytes.slice(10, 11)),
         }
     } else {
         return false
@@ -102,11 +102,11 @@ function parse_help_rep(bytes) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 3), false),
-            "lon": parseGCV(bytes.slice(3, 7)),
-            "lat": parseGCV(bytes.slice(7, 11)),
-            "gps_fix": !!parseB5to7(bytes.slice(11, 12)),
+            "positionLongitude": parseGCV(bytes.slice(3, 7)),
+            "positionLatitude": parseGCV(bytes.slice(7, 11)),
+            "positionGnssFix": !!parseB5to7(bytes.slice(11, 12)),
             "alarm_type": parseB0to4(bytes.slice(11, 12)),
-            "batt": parseNumber(bytes.slice(12, 13), false),
+            "battery": parseNumber(bytes.slice(12, 13), false),
             "timestamp": parseNumber(bytes.slice(13, 17), true),
         }
     }
@@ -120,9 +120,9 @@ function parse_help_rep_short(bytes) {
         return {
             "version": parseNumber(bytes.slice(0, 1), false),
             "command_id": parseNumber(bytes.slice(1, 2), false),
-            "lon": parseGCV(bytes.slice(2, 6)),
-            "lat": parseGCV(bytes.slice(6, 10)),
-            "gps_fix": !!parseB5to7(bytes.slice(10, 11)),
+            "positionLongitude": parseGCV(bytes.slice(2, 6)),
+            "positionLatitude": parseGCV(bytes.slice(6, 10)),
+            "positionGnssFix": !!parseB5to7(bytes.slice(10, 11)),
             "alarm_type": parseB0to4(bytes.slice(10, 11)),
         }
     }
@@ -138,10 +138,10 @@ function parse_beacon_track_rep(bytes) {
             "command_id": parseNumber(bytes.slice(1, 3), false),
             "beacon_id": parseHex(bytes.slice(3, 23)),
             "beacon_type": parseB5to7(bytes.slice(23, 24)),
-            "report_type": parseB0to4(bytes.slice(23, 24)),
+            "reportType": parseB0to4(bytes.slice(23, 24)),
             "rssi": parseNumber(bytes.slice(24, 25), false),
             "tx_power": parseNumber(bytes.slice(25, 26), false),
-            "batt": parseNumber(bytes.slice(26, 27), false),
+            "battery": parseNumber(bytes.slice(26, 27), false),
         }
     }
     else {
@@ -159,7 +159,7 @@ function parse_beacon_help_rep(bytes) {
             "alarm_type": parseB0to4(bytes.slice(23, 24)),
             "rssi": parseNumber(bytes.slice(24, 25), false),
             "tx_power": parseNumber(bytes.slice(25, 26), false),
-            "batt": parseNumber(bytes.slice(26, 27), false),
+            "battery": parseNumber(bytes.slice(26, 27), false),
         }
     } else {
         return false
