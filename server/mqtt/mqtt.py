@@ -38,11 +38,12 @@ class TTNMqttSaver(mqtt.Client):
         try:
             uplink_msg = json_message["uplink_message"]
             count = uplink_msg["f_cnt"]
+            port = uplink_msg["f_port"]
             payload = uplink_msg["frm_payload"]
             decoded_payload = uplink_msg["decoded_payload"]
             rx_metadata = uplink_msg["rx_metadata"]
             consumed_airtime = uplink_msg["consumed_airtime"]
-            return Message(device.eui, count, payload, decoded_payload, rx_metadata,
+            return Message(device.eui, count, port, payload, decoded_payload, rx_metadata,
                            consumed_airtime)
         except KeyError as e:
             raise InvalidMqttMessageError("MQTT message payload didn't contain all necessary data "

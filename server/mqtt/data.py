@@ -11,6 +11,7 @@ class Device:
 class Message:
     device_eui: str
     count: int
+    port: int
     payload: str
     decoded_payload: dict
     rx_metadata: dict
