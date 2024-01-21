@@ -13,7 +13,8 @@ def create_line_geojson_features(data):
             },
             'properties': {
                 'times': [data[index]['time'], data[index+1]['time']],
-                'popup': str(point['time']),  # Use the timestamp as a popup content
+                'popup': f"time: {str(point['time'])}\n"
+                         f"battery: {str(point['battery'])}",  # Use the timestamp as a popup content
                 'style': {
                     'color': 'red',
                     'weight': 3
