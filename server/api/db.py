@@ -18,6 +18,6 @@ class ApiMongoDbClient(MongoDbClient):
         messages = list(device_collection.find(query)
                         .skip((page_num - 1) * page_size)
                         .limit(page_size)
-                        .sort('count', pymongo.DESCENDING)
+                        .sort('rx_metadata.0.received_at', pymongo.DESCENDING)
                         )
         return messages, total_messages
